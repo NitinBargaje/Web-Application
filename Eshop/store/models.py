@@ -29,3 +29,20 @@ class Product(models.Model):
     @staticmethod
     def get_all_product_by_category(category_id):
         return Product.objects.filter(category=category_id)
+
+    
+class Customer(models.Model):
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
+    mobile = models.CharField(max_length=15)
+    email = models.EmailField()
+    password = models.CharField(max_length=500)
+
+    def isExists(self):
+        if Customer.objects.filter(email = self.email):
+            return True
+        else:
+            return False
+
+    def register(self):
+        self.save()
