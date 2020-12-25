@@ -38,8 +38,11 @@
             </tfoot>
         </table>
         <div class="m-3 p-3">
-            <a href="" data-toggle="modal" data-target="#exampleModal"
-                class="btn btn-outline-info border rounded col-lg-3 float-right">Check Out</a>
+            {% if request.session.customer %}
+                <a href="" data-toggle="modal" data-target="#exampleModal"class="btn btn-outline-info border rounded col-lg-3 float-right">Check Out</a>
+            {% else %}
+                <a href="/login?return_url=/cart" class="btn btn-secondary border rounded col-lg-3 float-right">Login And Check Out</a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -68,7 +71,7 @@
                             <label for="">Phone</label>
                             <input type="text" name="phone" id="" class="form-control" placeholder="">
                         </div>
-                        <input type="submit" value="Check Out" class="btn float-right btn-outline-info">
+                        <input type="submit" value="Order" class="btn float-right btn-outline-info">
                     </form>
                 </div>
             </div>

@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password, check_password
 from .models import Product, Category, Customer, Order
 from django.views import View
+from store.middlewares.auth import auth_middleware
 
 # Create your views here.
 
@@ -92,7 +93,11 @@ class Signup(View):
 
 
 class Login(View):
+    return_url = None
+
     def get(self, request):
+        Login.return_url = request.GET.get('return_url')
+        print(Login.return_url)
         return render(request, 'login.html')
 
     def post(self, request):
@@ -101,13 +106,26 @@ class Login(View):
         if customer:
             if check_password(login.get('password'), customer.password):
                 request.session['customer'] = customer.id
-                return redirect('homepage')
+                print(Login.return_url)
+                if Login.return_url:
+                    return HttpResponseRedirect(Login.return_url)
+                else:
+                    Login.return_url = None
+                    return redirect('homepage')
             else:
                 error_message = 'Incorrect Password!!'
                 data = {'error': error_message, 'email': customer.email}
                 return render(request, 'login.html', data)
         else:
             return render(request, 'login.html', {'error': 'Email not found'})
+
+
+class Logout(View):
+    def get(self, request):
+        print(request.session.get('customer'))
+        request.session['customer'] = {}
+        request.session['cart'] = {}
+        return redirect('login')
 
 
 class Cart(View):
@@ -123,6 +141,7 @@ class CheckOut(View):
         phone = request.POST.get('phone')
         customer = request.session.get('customer')
         cart = request.session.get('cart')
+        # print(Customer.get_customer_by_id(customer))
         products = Product.get_all_product_by_ids(
             list(cart.keys()))
         for product in products:
@@ -136,3 +155,10 @@ class CheckOut(View):
             order.placeOrder()
         request.session['cart'] = {}
         return redirect('cart')
+
+
+class Orders(View):
+    def get(self, request):
+        customer_id = request.session.get('customer')
+        orders = Order.get_order_by_customer(customer_id)
+        return render(request, 'orders.html', {'orders': orders})
